@@ -27,3 +27,13 @@ The project is develop under npm 22.14.0, please make sure you have the npm vers
 - Implement 1st stage logic (board generation).
 - Implement click action logic.
 - Handle uuid.
+
+## Time complexity
+
+For API complexity
+
+## Building Resilence
+
+### Respond those which only being updated
+
+Concerning the board size may be huge, it is better to return the "updated cell" but not the whole board to optimize the efficiency.

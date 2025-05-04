@@ -50,6 +50,7 @@ export class Game {
         } else {
             this.revealSafeCell(row, col);
             if (this.safeCellsLeft === 0) {
+                this.revealAllCells();
                 this.status = "won";
             }
         }

@@ -15,4 +15,5 @@ export type StartGameResponse = {
 export type RevealResponse = {
     board: Board;
     status: GameStatus;
+    safeCellsLeft: number;
 }

@@ -9,8 +9,8 @@ import { RevealResponseDto } from "./dto/response/reveal-response.dto";
 export class GameService {
     private games = new Map<string, Game>();
 
-    StartGame(rows: number, cols: number, bombs: number): StartGameResponseDto {
-        const id = uuidv4();
+    StartGame(rows: number, cols: number, bombs: number, lastid?: string): StartGameResponseDto {
+        const id = lastid ?? uuidv4();
         const game = new Game(id, rows, cols, bombs);
         this.games.set(id, game);
         return { id, board: game.boardDto };
@@ -26,6 +26,6 @@ export class GameService {
             throw new Error(`Coordinates out of bounds: (${row}, ${col})`);
         }
         const board = game.Reveal(row, col);
-        return { board, status: game.status };
+        return { board, status: game.status, safeCellsLeft: game.safeCellsLeft };
     }
 }

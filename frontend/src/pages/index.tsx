@@ -16,6 +16,7 @@ export default function HomePage() {
     const [cols, setCols] = useState(10);
     const [bombs, setBombs] = useState(10);
     const [error, setError] = useState("");
+    const [safeCellsLeft, setSafeCellsLeft] = useState(0);
 
     useEffect(() => {
         console.log("Board length:", board.length);
@@ -31,18 +32,31 @@ export default function HomePage() {
             setError("Bombs must be between 1 and total cells ‑ 1.");
             return;
         }
-        const res = await startGame(rows, cols, bombs);
+        let res: {
+            id: string;
+            board: BoardType;
+        }
+        if (gameId !== "") {
+            res = await startGame(rows, cols, bombs, gameId);
+        } else {
+            res = await startGame(rows, cols, bombs);
+        }
         setGameId(res.id);
         setBoard(res.board);
         setStatus("playing");
         setFlagged(new Set());
+        setSafeCellsLeft(rows * cols - bombs);
     };
 
     const onCellClick = async (r: number, c: number) => {
         if (status !== "playing") return;
-        const { board: next, status: nextStatus } = await reveal(gameId, r, c);
+        
+        if (flagged.has(`${r}-${c}`)) return;
+        const { board: next, status: nextStatus, safeCellsLeft: nextSafeCellsLeft }
+            = await reveal(gameId, r, c);
         setBoard(next);
         setStatus(nextStatus as GameStatus);
+        setSafeCellsLeft(nextSafeCellsLeft);
     };
 
     const toggleFlag = (r: number, c: number) => {
@@ -97,17 +111,23 @@ export default function HomePage() {
                 </div>
 
                 {error && <div className="error">{error}</div>}
-                <p style={{ marginTop: 4, fontWeight: 600 }}>
-                    Status: {status}
-                </p>
+                
                 
                 {board.length > 0 && (
-                    <Board
-                        board={board}
-                        onCellClick={onCellClick}
-                        flagged={flagged}
-                        toggleFlag={toggleFlag}
-                    />
+                    <div>
+                        <p style={{ marginTop: 4, fontWeight: 600 }}>
+                            Status: {status}
+                        </p>
+                        <p style={{ marginTop: 4, fontWeight: 600 }}>
+                            remain safe position: {safeCellsLeft}
+                        </p>
+                        <Board
+                            board={board}
+                            onCellClick={onCellClick}
+                            flagged={flagged}
+                            toggleFlag={toggleFlag}
+                        />
+                    </div>
                 )}
             </div>
         </div>

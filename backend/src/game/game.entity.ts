@@ -53,7 +53,6 @@ export class Game {
                 this.status = "won";
             }
         }
-
         return this.boardDto;
     }
 

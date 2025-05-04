@@ -6,14 +6,12 @@ export type CellInfo = {
 
 export type GameStatus = "playing" | "lost" | "won";
 
-export type Board = CellInfo[][];
-
 export type StartGameResponse = {
     id: string;
 }
 
 export type RevealResponse = {
-    board: Board;
+    revealedCell: { cell: CellInfo, position: [number, number] }[];
     status: GameStatus;
     safeCellsLeft: number;
 }

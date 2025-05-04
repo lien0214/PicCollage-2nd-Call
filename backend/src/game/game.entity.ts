@@ -1,8 +1,4 @@
-export type Cell = {
-    revealed: boolean;
-    bomb: boolean;
-    adjacent: number;
-};
+import { Cell } from "./cell";
 
 export class Game {
     id: string;
@@ -11,7 +7,6 @@ export class Game {
     bombs: number;
     safeCellsLeft: number;
     status: "playing" | "lost" | "won";
-    boardDto: Cell[][];
     safePositions: [number, number][];
     
     private board: Cell[][];
@@ -25,14 +20,13 @@ export class Game {
         this.safeCellsLeft = rows * cols - bombs;
         this.status = "playing";
         this.board = this.generateBoard();
-        this.boardDto = this.generateEmptyDtoBoard();
         this.safePositions = this.getSafePositions();
         this.firstClick = true;
     }
     
-    Reveal(row: number, col: number): Cell[][] {
+    Reveal(row: number, col: number): { cell: Cell, position: [number, number] }[] {
         let cell = this.board[row][col];
-        if (cell.revealed) return this.board;
+        if (cell.revealed) [];
         if (this.firstClick) {
             this.firstClick = false;
             if (cell.bomb) {
@@ -44,17 +38,18 @@ export class Game {
         }
 
         cell = this.board[row][col];
+        let result: { cell: Cell, position: [number, number] }[];
         if (cell.bomb) {
-            this.revealAllCells();
+            result = this.revealAllCells();
             this.status = "lost";
         } else {
-            this.revealSafeCell(row, col);
+            result = this.revealSafeCell(row, col);
             if (this.safeCellsLeft === 0) {
-                this.revealAllCells();
+                result.push(...this.revealAllCells());
                 this.status = "won";
             }
         }
-        return this.boardDto;
+        return result;
     }
 
     InBound(row: number, col: number): boolean {
@@ -82,12 +77,6 @@ export class Game {
 
         }
         return board;
-    }
-
-    private generateEmptyDtoBoard(): Cell[][] {
-        return Array.from({ length: this.rows }, () =>
-            Array.from({ length: this.cols }, () => ({ revealed: false, bomb: false, adjacent: 0 })),
-        );
     }
 
     private getSafePositions(): [number, number][] {
@@ -139,33 +128,38 @@ export class Game {
     }
     
 
-    private revealSafeCell(row: number, col: number) {
+    private revealSafeCell(row: number, col: number): { cell: Cell, position: [number, number] }[] {
         const cell = this.board[row][col];
-        if (cell.revealed || cell.bomb) return;
+        if (cell.revealed || cell.bomb) return []; // Stop if the cell is already revealed or is a bomb
+    
+        const revealedCells: { cell: Cell, position: [number, number] }[] = [];
         this.safeCellsLeft--;
-        this.revealCellDto(row, col);   
+        revealedCells.push(this.revealCell(row, col)); // Reveal the current cell
         cell.revealed = true;
+    
         if (cell.adjacent === 0) {
-            this.getNeighbors(row, col).forEach(([nr, nc]) =>
-                this.revealSafeCell(nr, nc),
-            );
+            // Recursively reveal neighbors if the current cell has no adjacent bombs
+            this.getNeighbors(row, col).forEach(([nr, nc]) => {
+                revealedCells.push(...this.revealSafeCell(nr, nc));
+            });
         }
+    
+        return revealedCells; // Return the list of revealed cells
     }
 
-    private revealAllCells() {
+    private revealAllCells(): { cell: Cell, position: [number, number] }[] {
+        let result: { cell: Cell, position: [number, number] }[] = [];
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.cols; col++) {
-                this.revealCellDto(row, col);
+                if (this.board[row][col].revealed) continue;
+                result.push(this.revealCell(row, col));
             }
         }
+        return result;
     }
 
-    private revealCellDto(row: number, col: number) {
-        const cell = this.board[row][col];
-        this.boardDto[row][col] = {
-            revealed: true,
-            bomb: cell.bomb,
-            adjacent: cell.adjacent,
-        };
+    private revealCell(row: number, col: number): { cell: Cell, position: [number, number] } {
+        this.board[row][col].revealed = true;
+        return { cell: this.board[row][col], position: [row, col] };
     }
 }

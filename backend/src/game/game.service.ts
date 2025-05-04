@@ -34,9 +34,9 @@ export class GameService {
         if (!game.InBound(row, col)) {
             throw new Error(`Coordinates out of bounds: (${row}, ${col})`);
         }
-        const board = game.Reveal(row, col);
+        const revealedCell = game.Reveal(row, col);
         gameEntry.timestamp = Date.now();
-        return { board, status: game.status, safeCellsLeft: game.safeCellsLeft };
+        return { revealedCell: revealedCell, status: game.status, safeCellsLeft: game.safeCellsLeft };
     }
 
     private cleanUpOldGames() {

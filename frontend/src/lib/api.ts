@@ -1,9 +1,9 @@
-import { Board } from "@/types/game";
+import { Board, StartGameResponse } from "@/types/game";
 
 const API_BASE = process.env.NEST_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function startGame(rows: number, cols: number, bombs: number, lastid?: string): 
-    Promise<{ id: string, board: Board }> {
+    Promise<StartGameResponse> {
     const res = await fetch(`${API_BASE}/game/start-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

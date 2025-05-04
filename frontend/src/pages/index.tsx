@@ -1,7 +1,7 @@
 /* src/pages/index.tsx */
 import React, { useEffect, useState } from "react";
 import { startGame, reveal } from "@/lib/api";
-import { Board as BoardType, GameStatus } from "@/types/game";
+import { Board as BoardType, GameStatus, StartGameResponse } from "@/types/game";
 import { Board } from "@/components/Board";
 
 import "@/styles/globals.css";
@@ -49,17 +49,14 @@ export default function HomePage() {
             setError("Bombs must be between 1 and total cells ‑ 1.");
             return;
         }
-        let res: {
-            id: string;
-            board: BoardType;
-        }
+        let res: StartGameResponse;
         if (gameId !== "") {
             res = await startGame(rows, cols, bombs, gameId);
         } else {
             res = await startGame(rows, cols, bombs);
         }
         setGameId(res.id);
-        setBoard(res.board);
+        setBoard(generateEmptyBoard(rows, cols));
         setStatus("playing");
         setFlagged(new Set());
         setSafeCellsLeft(rows * cols - bombs);
@@ -169,4 +166,8 @@ function formatTime(seconds: number) {
     const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
     const ss = String(seconds % 60).padStart(2, "0");
     return `${mm}:${ss}`;
+}
+
+function generateEmptyBoard(rows: number, cols: number): BoardType {
+    return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ revealed: false, bomb: false, adjacent: 0 })));
 }

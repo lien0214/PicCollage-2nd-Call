@@ -3,7 +3,6 @@ import { Game } from "./game.entity";
 import { v4 as uuidv4 } from "uuid";
 import { StartGameResponseDto } from "./dto/response/start-game-response.dto";
 import { RevealResponseDto } from "./dto/response/reveal-response.dto";
-import { time } from "console";
 
 const MAX_GAME_AGE_MS = 10 * 60 * 1000;
 
@@ -19,7 +18,7 @@ export class GameService {
         const id = lastid ?? uuidv4();
         const game = new Game(id, rows, cols, bombs);
         this.games.set(id, { game, timestamp: Date.now() });
-        return { id, board: game.boardDto };
+        return { id };
     }
 
     Reveal(id: string, row: number, col: number): RevealResponseDto {

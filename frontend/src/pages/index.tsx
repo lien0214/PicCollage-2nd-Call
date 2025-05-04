@@ -148,11 +148,17 @@ export default function HomePage() {
                 )}
             </div>
             {status !== "playing" && (
-                <div className="overlay">
+                <div className="overlay" onClick={() => setStatus("playing")}>
                     <div className="overlay-message">
-                        {status === "won" ? "🎉 You Won!" : "💥 Game Over"}
+                        <h2>{status === "won" ? "🎉 You Won!" : "💥 Game Over"}</h2>
+                        <p>⏱ Time: {formatTime(time)}</p>
+                        <p>🚩 Flags used: {flagged.size}</p>
+                        <p>✅ Revealed: {rows * cols - safeCellsLeft - bombs} / {rows * cols - bombs}</p>
+                        <button className="primary" onClick={startNewGame}>
+                            🔄 Restart Game
+                        </button>
                     </div>
-                </div>
+              </div>
             )}
         </div>
     );

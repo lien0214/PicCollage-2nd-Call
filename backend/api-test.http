@@ -1,0 +1,24 @@
+@host = http://localhost:3000
+
+### Start a new game
+POST {{host}}/game/start-game
+Content-Type: application/json
+
+{
+  "rows": 10,
+  "cols": 10,
+  "bombs": 15
+}
+
+###
+
+### Reveal a cell (replace {{id}} with actual ID from start-game)
+@id = c99fdab2-fae6-460f-a55f-f502dfa16b78
+POST {{host}}/game/reveal
+Content-Type: application/json
+
+{
+  "id": "{{id}}",
+  "row": 0,
+  "col": 0
+}

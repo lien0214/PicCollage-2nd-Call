@@ -3,21 +3,31 @@ import { Game } from "./game.entity";
 import { v4 as uuidv4 } from "uuid";
 import { StartGameResponseDto } from "./dto/response/start-game-response.dto";
 import { RevealResponseDto } from "./dto/response/reveal-response.dto";
+import { time } from "console";
 
+const MAX_GAME_AGE_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class GameService {
-    private games = new Map<string, Game>();
+    private games = new Map<string, {game: Game; timestamp: number}>();
+
+    constructor() {
+        setInterval(() => this.cleanUpOldGames(), MAX_GAME_AGE_MS / 2);
+    }
 
     StartGame(rows: number, cols: number, bombs: number, lastid?: string): StartGameResponseDto {
         const id = lastid ?? uuidv4();
         const game = new Game(id, rows, cols, bombs);
-        this.games.set(id, game);
+        this.games.set(id, { game, timestamp: Date.now() });
         return { id, board: game.boardDto };
     }
 
     Reveal(id: string, row: number, col: number): RevealResponseDto {
-        const game = this.games.get(id);
+        const gameEntry = this.games.get(id);
+        if (!gameEntry) {
+            throw new NotFoundException("Game not found");
+        }
+        const { game, timestamp }: { game: Game; timestamp: number } = gameEntry;
         if (!game) {
             throw new NotFoundException("Game not found");
         }
@@ -26,6 +36,16 @@ export class GameService {
             throw new Error(`Coordinates out of bounds: (${row}, ${col})`);
         }
         const board = game.Reveal(row, col);
+        gameEntry.timestamp = Date.now();
         return { board, status: game.status, safeCellsLeft: game.safeCellsLeft };
+    }
+
+    private cleanUpOldGames() {
+        const now = Date.now();
+        for (const [id, { timestamp }] of this.games.entries()) {
+            if (now - timestamp > MAX_GAME_AGE_MS) {
+                this.games.delete(id);
+            }
+        }
     }
 }

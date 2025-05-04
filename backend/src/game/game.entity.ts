@@ -11,9 +11,9 @@ export class Game {
     bombs: number;
     safeCellsLeft: number;
     status: "playing" | "lost" | "won";
+    boardDto: Cell[][];
     
     private board: Cell[][];
-    private boardDto: Cell[][];
 
     constructor(id: string, rows: number, cols: number, bombs: number) {
         this.id = id;

@@ -13,7 +13,7 @@ export class GameService {
         const id = uuidv4();
         const game = new Game(id, rows, cols, bombs);
         this.games.set(id, game);
-        return { id };
+        return { id, board: game.boardDto };
     }
 
     Reveal(id: string, row: number, col: number): RevealResponseDto {

@@ -1,13 +1,13 @@
 /* src/pages/index.tsx */
 import React, { useEffect, useState } from "react";
 import { startGame, reveal } from "@/lib/api";
-import { Board as BoardType, GameStatus } from "@/types/game";
+import { CellInfo, GameStatus, StartGameResponse, RevealResponse } from "@/types/game";
 import { Board } from "@/components/Board";
 
 import "@/styles/globals.css";
 
 export default function HomePage() {
-    const [board, setBoard] = useState<BoardType>([]);
+    const [board, setBoard] = useState<CellInfo[][]>([]);
     const [gameId, setGameId] = useState("");
     const [status, setStatus] = useState<GameStatus>("playing");
     const [flagged, setFlagged] = useState<Set<string>>(new Set());
@@ -34,9 +34,9 @@ export default function HomePage() {
     }, [timerRunning, status]);
 
     useEffect(() => {
-    if (status !== "playing") {
-        setTimerRunning(false);
-    }
+        if (status !== "playing") {
+            setTimerRunning(false);
+        }
     }, [status]);
 
     const startNewGame = async () => {
@@ -49,17 +49,14 @@ export default function HomePage() {
             setError("Bombs must be between 1 and total cells ‑ 1.");
             return;
         }
-        let res: {
-            id: string;
-            board: BoardType;
-        }
+        let res: StartGameResponse;
         if (gameId !== "") {
             res = await startGame(rows, cols, bombs, gameId);
         } else {
             res = await startGame(rows, cols, bombs);
         }
         setGameId(res.id);
-        setBoard(res.board);
+        setBoard(generateEmptyBoard(rows, cols));
         setStatus("playing");
         setFlagged(new Set());
         setSafeCellsLeft(rows * cols - bombs);
@@ -69,13 +66,21 @@ export default function HomePage() {
 
     const onCellClick = async (r: number, c: number) => {
         if (status !== "playing") return;
-        
         if (flagged.has(`${r}-${c}`)) return;
-        const { board: next, status: nextStatus, safeCellsLeft: nextSafeCellsLeft }
-            = await reveal(gameId, r, c);
-        setBoard(next);
-        setStatus(nextStatus as GameStatus);
-        setSafeCellsLeft(nextSafeCellsLeft);
+
+        const res: RevealResponse = await reveal(gameId, r, c);
+
+        // Patch board with revealed cells
+        setBoard((prevBoard) => {
+            const copy = prevBoard.map(row => row.map(cell => ({ ...cell })));
+            res.revealedCell.forEach(({ position, cell }) => {
+                copy[position[0]][position[1]] = cell;
+            });
+            return copy;
+        });
+
+        setStatus(res.status);
+        setSafeCellsLeft(res.safeCellsLeft);
     };
 
     const toggleFlag = (r: number, c: number) => {
@@ -134,8 +139,7 @@ export default function HomePage() {
                 </div>
 
                 {error && <div className="error">{error}</div>}
-                
-                
+
                 {board.length > 0 && (
                     <div>
                         <Board
@@ -147,6 +151,7 @@ export default function HomePage() {
                     </div>
                 )}
             </div>
+
             {status !== "playing" && (
                 <div className="overlay" onClick={() => setStatus("playing")}>
                     <div className="overlay-message">
@@ -158,15 +163,24 @@ export default function HomePage() {
                             🔄 Restart Game
                         </button>
                     </div>
-              </div>
+                </div>
             )}
         </div>
     );
 }
 
-
 function formatTime(seconds: number) {
     const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
     const ss = String(seconds % 60).padStart(2, "0");
     return `${mm}:${ss}`;
+}
+
+function generateEmptyBoard(rows: number, cols: number): CellInfo[][] {
+    return Array.from({ length: rows }, () =>
+        Array.from({ length: cols }, () => ({
+            revealed: false,
+            bomb: false,
+            adjacent: 0,
+        }))
+    );
 }

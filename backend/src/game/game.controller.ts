@@ -3,6 +3,7 @@ import { GameService } from "./game.service";
 import { StartGameDto } from "./dto/request/start-game.dto";
 import { StartGameResponseDto } from "./dto/response/start-game-response.dto";
 import { RevealResponseDto } from "./dto/response/reveal-response.dto";
+import { RevealDto } from "./dto/request/reveal.dto";
 
 @Controller("game")
 export class GameController {
@@ -17,7 +18,7 @@ export class GameController {
     }
 
     @Post("reveal")
-    reveal(@Body() dto: { id: string; row: number; col: number }): RevealResponseDto {
+    reveal(@Body() dto: RevealDto): RevealResponseDto {
         return this._gameService.Reveal(dto.id, dto.row, dto.col);
     }
 }

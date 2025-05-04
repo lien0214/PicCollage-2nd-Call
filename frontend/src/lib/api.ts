@@ -1,9 +1,9 @@
-import { Board } from "@/types/game";
+import { RevealResponse, StartGameResponse } from "@/types/game";
 
 const API_BASE = process.env.NEST_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function startGame(rows: number, cols: number, bombs: number, lastid?: string): 
-    Promise<{ id: string, board: Board }> {
+    Promise<StartGameResponse> {
     const res = await fetch(`${API_BASE}/game/start-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -15,7 +15,7 @@ export async function startGame(rows: number, cols: number, bombs: number, lasti
 }
 
 export async function reveal(id: string, row: number, col: number): 
-    Promise<{ board: any[][]; status: string; safeCellsLeft: number }> {
+    Promise<RevealResponse> {
     const res = await fetch(`${API_BASE}/game/reveal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

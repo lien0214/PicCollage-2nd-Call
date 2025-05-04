@@ -1,6 +1,6 @@
-import { Cell } from '../../game.entity';
+import { Cell } from '../../cell';
 export class RevealResponseDto {
-    board: Cell[][];
+    revealedCell: { cell: Cell; position: [number, number] }[];
     status: 'playing' | 'lost' | 'won';
     safeCellsLeft: number;
 }

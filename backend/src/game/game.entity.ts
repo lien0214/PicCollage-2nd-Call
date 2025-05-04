@@ -129,19 +129,27 @@ export class Game {
     
 
     private revealSafeCell(row: number, col: number): { cell: Cell, position: [number, number] }[] {
-        const cell = this.board[row][col];
-        if (cell.revealed || cell.bomb) return []; // Stop if the cell is already revealed or is a bomb
-    
         const revealedCells: { cell: Cell, position: [number, number] }[] = [];
-        this.safeCellsLeft--;
-        revealedCells.push(this.revealCell(row, col)); // Reveal the current cell
-        cell.revealed = true;
+        const stack: [number, number][] = [[row, col]];
     
-        if (cell.adjacent === 0) {
-            // Recursively reveal neighbors if the current cell has no adjacent bombs
-            this.getNeighbors(row, col).forEach(([nr, nc]) => {
-                revealedCells.push(...this.revealSafeCell(nr, nc));
-            });
+        while (stack.length > 0) {
+            const [currentRow, currentCol] = stack.pop()!;
+            const cell = this.board[currentRow][currentCol];
+    
+            if (cell.revealed || cell.bomb) continue;
+    
+            this.safeCellsLeft--;
+            revealedCells.push(this.revealCell(currentRow, currentCol));
+            cell.revealed = true;
+    
+            if (cell.adjacent === 0) {
+                this.getNeighbors(currentRow, currentCol).forEach(([nr, nc]) => {
+                    const neighbor = this.board[nr][nc];
+                    if (!neighbor.revealed && !neighbor.bomb) {
+                        stack.push([nr, nc]);
+                    }
+                });
+            }
         }
     
         return revealedCells; // Return the list of revealed cells

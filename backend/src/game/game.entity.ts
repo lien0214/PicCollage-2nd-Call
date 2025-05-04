@@ -12,8 +12,10 @@ export class Game {
     safeCellsLeft: number;
     status: "playing" | "lost" | "won";
     boardDto: Cell[][];
+    safePositions: [number, number][];
     
     private board: Cell[][];
+    private firstClick: boolean;
 
     constructor(id: string, rows: number, cols: number, bombs: number) {
         this.id = id;
@@ -24,12 +26,24 @@ export class Game {
         this.status = "playing";
         this.board = this.generateBoard();
         this.boardDto = this.generateEmptyDtoBoard();
+        this.safePositions = this.getSafePositions();
+        this.firstClick = true;
     }
     
     Reveal(row: number, col: number): Cell[][] {
-        const cell = this.board[row][col];
+        let cell = this.board[row][col];
         if (cell.revealed) return this.board;
+        if (this.firstClick) {
+            this.firstClick = false;
+            if (cell.bomb) {
+                // switch the bomb to a random safe cell
+                const randomIndex = Math.floor(Math.random() * this.safePositions.length);
+                const safePos = this.safePositions[randomIndex];
+                this.swapBomb([row, col], safePos);
+            }
+        }
 
+        cell = this.board[row][col];
         if (cell.bomb) {
             this.revealAllCells();
             this.status = "lost";
@@ -63,9 +77,7 @@ export class Game {
             const col = index % this.cols;
             board[row][col].bomb = true;
             this.getNeighbors(row, col).forEach(([r, c]) => {
-                if (!board[r][c].bomb) {
-                    board[r][c].adjacent++;
-                }
+                board[r][c].adjacent++;
             });
 
         }
@@ -76,6 +88,19 @@ export class Game {
         return Array.from({ length: this.rows }, () =>
             Array.from({ length: this.cols }, () => ({ revealed: false, bomb: false, adjacent: 0 })),
         );
+    }
+
+    private getSafePositions(): [number, number][] {
+        const safePositions: [number, number][] = new Array(this.rows * this.cols - this.bombs);
+        let index = 0;
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.cols; col++) {
+                if (!this.board[row][col].bomb) {
+                    safePositions[index++] = [row, col];
+                }
+            }
+        }
+        return safePositions.slice(0, index);
     }
 
     private getNeighbors(row: number, col: number): [number, number][] {
@@ -95,6 +120,24 @@ export class Game {
         }
         return sequence.slice(0, count);
     }
+
+    private swapBomb(bombPos: [number, number], safePos: [number, number]) {
+        const [bombRow, bombCol] = bombPos;
+        const [safeRow, safeCol] = safePos;
+    
+        // Remove bomb from old position
+        this.board[bombRow][bombCol].bomb = false;
+        this.getNeighbors(bombRow, bombCol).forEach(([r, c]) => {
+            this.board[r][c].adjacent--;
+        });
+    
+        // Place bomb in new (safe) position
+        this.board[safeRow][safeCol].bomb = true;
+        this.getNeighbors(safeRow, safeCol).forEach(([r, c]) => {
+            this.board[r][c].adjacent++;
+        });
+    }
+    
 
     private revealSafeCell(row: number, col: number) {
         const cell = this.board[row][col];

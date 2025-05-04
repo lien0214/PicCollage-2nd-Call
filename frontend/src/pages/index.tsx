@@ -18,9 +18,26 @@ export default function HomePage() {
     const [error, setError] = useState("");
     const [safeCellsLeft, setSafeCellsLeft] = useState(0);
 
+    const [time, setTime] = useState(0);
+    const [timerRunning, setTimerRunning] = useState(false);
+
     useEffect(() => {
-        console.log("Board length:", board.length);
-    }, [board]);
+        let interval: NodeJS.Timeout | undefined;
+        if (timerRunning && status === "playing") {
+            interval = setInterval(() => setTime((prev) => prev + 1), 1000);
+        }
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [timerRunning, status]);
+
+    useEffect(() => {
+    if (status !== "playing") {
+        setTimerRunning(false);
+    }
+    }, [status]);
 
     const startNewGame = async () => {
         setError("");
@@ -46,6 +63,8 @@ export default function HomePage() {
         setStatus("playing");
         setFlagged(new Set());
         setSafeCellsLeft(rows * cols - bombs);
+        setTime(0);
+        setTimerRunning(true);
     };
 
     const onCellClick = async (r: number, c: number) => {
@@ -70,6 +89,10 @@ export default function HomePage() {
 
     return (
         <div className="app-shell">
+            <div className="timer-box">
+                ⏱ {formatTime(time)}<br />
+                Safe cell: {safeCellsLeft}
+            </div>
             <div className="panel">
                 <h1 style={{ marginTop: 0 }}>Minesweeper</h1>
 
@@ -115,12 +138,6 @@ export default function HomePage() {
                 
                 {board.length > 0 && (
                     <div>
-                        <p style={{ marginTop: 4, fontWeight: 600 }}>
-                            Status: {status}
-                        </p>
-                        <p style={{ marginTop: 4, fontWeight: 600 }}>
-                            remain safe position: {safeCellsLeft}
-                        </p>
                         <Board
                             board={board}
                             onCellClick={onCellClick}
@@ -130,6 +147,20 @@ export default function HomePage() {
                     </div>
                 )}
             </div>
+            {status !== "playing" && (
+                <div className="overlay">
+                    <div className="overlay-message">
+                        {status === "won" ? "🎉 You Won!" : "💥 Game Over"}
+                    </div>
+                </div>
+            )}
         </div>
     );
+}
+
+
+function formatTime(seconds: number) {
+    const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const ss = String(seconds % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
 }

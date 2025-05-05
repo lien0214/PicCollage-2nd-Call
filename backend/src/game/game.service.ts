@@ -15,6 +15,12 @@ export class GameService {
     }
 
     StartGame(rows: number, cols: number, bombs: number, lastid?: string): StartGameResponseDto {
+        if (rows < 1 || cols < 1) {
+            throw new Error("Rows and columns must be at least 1.");
+        }
+        if (bombs < 1 || bombs >= rows * cols) {
+            throw new Error("Bombs must be between 1 and total cells - 1.");
+        }
         const id = lastid ?? uuidv4();
         const game = new Game(id, rows, cols, bombs);
         this.games.set(id, { game, timestamp: Date.now() });

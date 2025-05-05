@@ -2,7 +2,7 @@
 
 import type { StartGameResponse, RevealResponse } from "../types/game";
 
-const API_BASE = "http://localhost:3001"; // Update to match the backend's base URL
+const API_BASE = import.meta.env.NEST_PUBLIC_API_URL ?? "http://localhost:3001";
 
 export async function startGame(rows: number, cols: number, bombs: number): Promise<StartGameResponse> {
     console.log("Starting game with params:", { rows, cols, bombs });

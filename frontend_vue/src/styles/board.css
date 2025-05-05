@@ -1,0 +1,67 @@
+:root {
+    --cell-size: 38px;
+    --cell-gap: 4px;
+  
+    --unrevealed-bg: #6b7280;
+    --unrevealed-hover: #81858d;
+    --revealed-bg: #e5e7eb;
+    --bomb-bg: #f87171;
+    --flag-color: #eab308;
+  }
+  
+  .board {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cell-gap);
+    align-items: center;
+  }
+  
+  .row {
+    display: flex;
+    gap: var(--cell-gap);
+  }
+  
+  .cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    user-select: none;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: var(--cell-size);
+    text-align: center;
+    border-radius: 0.4rem;
+    border: 1px solid #ffffff;
+    transition: background 0.12s, filter 0.12s;
+  }
+  
+  .unrevealed {
+    background: var(--unrevealed-bg);
+    color: #fff;
+    cursor: pointer;
+  }
+  .unrevealed:hover {
+    background: var(--unrevealed-hover);
+  }
+  
+  .revealed {
+    background: var(--revealed-bg);
+    color: #374151;
+  }
+  
+  .bomb {
+    background: var(--bomb-bg);
+    color: #fff;
+  }
+  
+  .flag {
+    color: var(--flag-color);
+  }
+  
+  /* subtle click feedback */
+  .cell:active {
+    filter: brightness(0.9);
+  }

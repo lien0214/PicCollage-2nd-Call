@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev:frontend": "npm --prefix frontend run dev",
-    "dev:frontend_vue": "npm --prefix frontend_vue run dev",
+    "dev:frontend:vue": "npm --prefix frontend_vue run dev",
     "dev:backend": "npm --prefix backend run start:dev",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "install:all": "npm --prefix frontend install && npm --prefix backend install"
